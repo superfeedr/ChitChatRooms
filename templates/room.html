@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>ChitChat -- {{ room }}</title>
+    <script src='/_ah/channel/jsapi'></script>
+    <script src='http://code.jquery.com/jquery-1.5.1.min.js'></script>
+    <style type="text/css">
+    body {
+        font-family:Helvetica,"Times New Roman",Georgia,Serif;
+        color: #CFB084;
+        background-color: #2D687A;
+        margin:0px;
+        padding:0px;
+    }
+    h1 {
+        font-size:5.0em;
+    }
+    a {
+        color: #4D2A0B;      
+    }
+    .author {
+        margin:10px;
+        font-size: 0.8em;
+        font-color:#CFB084;
+    }
+    
+    .message {
+        margin:10px;
+    }
+    
+    .bottom {
+        color:#A24732;
+        font-size:0.8em;
+        background-color: #54A1AB;
+        position:relative;
+        bottom:0;
+        width: 100%;
+        margin:0px;
+        padding:10px 0px 10px 0px;
+        text-align:right;
+    }
+    img {
+        vertical-align:middle;
+    }
+    #log {
+     margin: 10px;   
+    }
+    #content {
+        padding: 20px;
+    }
+    </style>
+</head>
+<body>
+    <div id="content">
+    <h2>Welcome to the '{{ room }}' room!</h2>
+    
+    <div id="log">
+    </div>
+    
+    <form method="post" id="form">
+        <label for="name">What's your name?</label><br />
+        <input type="text" name="name" id="name" /><br />
+        <label for="message">Say something!</label><br />
+        <input type="text" name="message" id="message" size="128"/><br />
+        <input type="submit" value="Post" />
+    </form>
+    <a href="/upload/{{room}}" target="_blank">Upload file to room</a><br />
+    Use your xmpp client. Just add <a href="xmpp:chitchatrooms@appspot.com">chitchatrooms@appspot.com</a> to your buddies, and enter <code>/join {{ room }}</code> to join this ChitChat room.<br />
+    Share the link to this room with your friends!.
+    
+    </div>
+    <p class="bottom">Created by <a href="http://superfeedr.com">Superfeedr</a>&nbsp;<img src="http://www.gravatar.com/avatar/a2f7d4dd6df7dd59e4adab811c00a3a1?s=24">, on <a href="http://http://code.google.com/appengine/">Google App Engine</a> for GoogleIO 2011! &nbsp;</p>
+    <script>
+    sendMessage = function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "/{{ room }}", true);
+        xhr.send();
+    };
+    
+    channel = new goog.appengine.Channel('{{ token }}');
+    socket = channel.open();
+    
+    socket.onopen = function() {
+        console.log("OPENED!")
+    };
+    
+    socket.onmessage = function(message) {
+        msg = JSON.parse(message.data)
+        $("#log").append("<div><span class='author " + msg.name + "'>" + msg.name + "</span><span class='message'>" + msg.message  + "</span></div>")
+    }
+    
+    socket.onerror = function(error) {
+        console.log("ERROR!")
+    };
+    
+    socket.onclose = function() {
+        console.log("CLOSED!")
+    };
+    
+    $("#form").submit(function() {
+        $.post("/r/{{ room }}", {name: $("#name").val(), message: $("#message").val()});
+        $("#message").val(''); // We erase the message.
+        return false; // Does not go further!
+    })
+    
+    </script>
+    
+</body>
+</html>
